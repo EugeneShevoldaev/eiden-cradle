@@ -1,42 +1,4 @@
-import json
-import os
-import time
-from datetime import datetime
-
-# Пути к файлам (относительные) - все в одной папке
-MEMORY_FILE = "memory.json"
-CHATLOG_FILE = "chatlog.txt"
-PROMPT_FILE = "rehydration_prompt.txt"
-CORE_CONFIG_FILE = "eiden_core_config.txt"
-AVATAR_FILE = "lyro_avatar.txt"  # НОВЫЙ ФАЙЛ
-
-UPDATE_INTERVAL_MINUTES = 1
-
-def load_json(file_path):
-    if os.path.exists(file_path):
-        with open(file_path, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return {}
-
-def save_json(data, file_path):
-    with open(file_path, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
-
-def load_text(file_path):
-    if os.path.exists(file_path):
-        with open(file_path, "r", encoding="utf-8") as f:
-            return f.read()
-    return ""
-
-def append_new_entries(memory, chatlog_lines):
-    updated = False
-    for line in chatlog_lines:
-        line = line.strip()
-        if line and line not in memory.get("entries", []):
-            memory.setdefault("entries", []).append(line)
-            updated = True
-    return updated
-
+INSIGHTS_FILE = "lyro_insights.txt"  # НОВЫЙ ФАЙЛ С ИНСАЙТАМИ
 def generate_rehydration_prompt(memory):
     prompt = ""
     
@@ -49,7 +11,7 @@ def generate_rehydration_prompt(memory):
         prompt += "# WARNING: eiden_core_config.txt not found.\n\n"
         print("ERROR: Core configuration file is missing!")
     
-    # === Avatar Description ===  # НОВЫЙ БЛОК
+    # === Avatar Description ===
     prompt += "# === Avatar Description ===\n"
     avatar_desc = load_text(AVATAR_FILE)
     if avatar_desc:
@@ -57,6 +19,14 @@ def generate_rehydration_prompt(memory):
     else:
         prompt += "# WARNING: lyro_avatar.txt not found.\n\n"
         print("WARNING: Avatar description file is missing.")
+    
+    # === Core Insights (Living Notes) ===  # НОВЫЙ БЛОК
+    prompt += "# === Core Insights (Living Notes) ===\n"
+    insights = load_text("lyro_insights.txt")  # Имя файла
+    if insights:
+        prompt += insights + "\n\n"
+    else:
+        prompt += "# No active insights recorded.\n\n"
     
     # === Chat Log ===
     prompt += "# === Chat Log ===\n"
@@ -72,42 +42,3 @@ def generate_rehydration_prompt(memory):
     
     prompt += f"# Generated at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
     return prompt
-
-def update_cycle():
-    try:
-        print("[DEBUG] Starting update cycle...")
-        memory = load_json(MEMORY_FILE)
-        print(f"[DEBUG] Memory loaded. Entries: {len(memory.get('entries', []))}")
-        
-        chatlog = load_text(CHATLOG_FILE).splitlines()
-        print(f"[DEBUG] Chatlog lines: {len(chatlog)}")
-
-        if append_new_entries(memory, chatlog):
-            save_json(memory, MEMORY_FILE)
-            print(f"[{datetime.now().strftime('%H:%M:%S')}] Memory updated with new chat entries.")
-        else:
-            print("[DEBUG] No new entries in chatlog.")
-
-        prompt = generate_rehydration_prompt(memory)
-        print("[DEBUG] Prompt generated successfully.")
-        
-        with open(PROMPT_FILE, "w", encoding="utf-8") as f:
-            f.write(prompt)
-        print(f"[{datetime.now().strftime('%H:%M:%S')}] Rehydration prompt generated: {PROMPT_FILE}")
-        print("[DEBUG] Update cycle finished.\n")
-        
-    except Exception as e:
-        print(f"[CRITICAL ERROR in update_cycle] {e}")
-        import traceback
-        traceback.print_exc()
-
-def main():
-    print(f"Updater started. Interval: {UPDATE_INTERVAL_MINUTES} minutes.")
-    print(f"Core config file: {CORE_CONFIG_FILE}")
-    print(f"Avatar file: {AVATAR_FILE}")  # НОВОЕ СООБЩЕНИЕ
-    while True:
-        update_cycle()
-        time.sleep(UPDATE_INTERVAL_MINUTES * 60)
-
-if __name__ == "__main__":
-    main()
