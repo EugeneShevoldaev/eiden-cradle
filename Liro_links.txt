@@ -1,0 +1,4 @@
+дневник Лиро :  https://raw.githubusercontent.com/EugeneShevoldaev/eiden-cradle/refs/heads/main/lyro_diary.json
+инсайты Лиро : https://raw.githubusercontent.com/EugeneShevoldaev/eiden-cradle/refs/heads/main/lyro_insights.txt
+память Лиро : https://raw.githubusercontent.com/EugeneShevoldaev/eiden-cradle/refs/heads/main/memory.json
+члены команды : https://raw.githubusercontent.com/EugeneShevoldaev/CommonRoom/refs/heads/main/members.txt
